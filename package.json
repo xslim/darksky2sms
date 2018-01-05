@@ -1,0 +1,23 @@
+{
+  "name": "darksky2sms",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xslim/darksky2sms.git"
+  },
+  "author": "Taras Kalapun <t.kalapun@gmail.com> (http://kalapun.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xslim/darksky2sms/issues"
+  },
+  "homepage": "https://github.com/xslim/darksky2sms#readme",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "request": "^2.83.0"
+  }
+}
