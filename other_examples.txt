@@ -1,0 +1,46 @@
+Example of an NWS 12-hourly summary forecast:
+
+Sa PtSun 8% 46
+SaN Clr 6% 27
+Su Brz 50
+SuN Brz 28
+Mo Brz 51
+MoN Brz 28
+Tu SlChTstm 17% 43
+Saturday: Partly sunny, PoP 8%, high 46°F
+Saturday night: Clear, PoP 6%, low 27°F
+Sunday: Breezy, high 50°F
+Sunday night: Breezy, low 28°F
+Monday: Breezy, high 51°F
+Monday night: Breezy, low 28°F
+Tuesday: Slight chance thunderstorms, PoP 17%, high 43°F
+
+Example of an NWS 6-hourly detailed forecast:
+​
+Gale Wrnng
+Mo 1a 44 SSW13-16 3' SlChTstms
+7a 42 N24-33 4' ChRn
+1p 43 N28-35 10' SlChRn
+7p 44 N26-33 10' Cld
+Tu 1a 43 N7 3' Clr
+​Gale Warning
+Monday 1am: 44°F, wind SSW 13-16kt, 3’ waves, slight chance of thunderstorms
+Monday 7am: 42°F, wind N 24-33kt, 4’ waves, chance rain
+Monday 1pm: 43°F, wind N 28-35kt, 10’ waves, slight chance rain
+Monday 7pm: 44°F, wind N 26-33kt, 10’ waves, cloudy
+Tuesday 1am: 43°F, wind N 7kt, 3’ waves, clear
+
+Example from Darksky.net:
+​
+Th 10pPtCldW10mi51F
+Fr 6aClrSW16mi42F
+2pLtRn70%NE18mi59F
+10pCldW19mi48F
+Sa Sno2in87%14/23F
+Su HvyRn83%N9mi41/50F
+Thursday 10pm: Partly cloudy, west wind 10 mph, 51°F
+Friday 6am: Clear, southwest wind 16 mph, 42°F
+Friday 2pm: Light rain, PoP 70%, northeast wind 18 mph, 59°F
+Friday 10pm: Cloudy, west wind 19 mph, 48°F
+Saturday: Snow 2", PoP 87%, no wind, low 14°F, high 23°F
+Sunday: Heavy rain, PoP 83%, north wind 9 mph, low 41°F, high 50°F
