@@ -1,6 +1,7 @@
 
 require('dotenv').config();
 var request = require('request')
+// var weatherStr = require('.weather_str')()
 
 //var location = msg.match[1] || process.env.DARK_SKY_DEFAULT_LAT_LON;
 var location = process.env.DARK_SKY_DEFAULT_LAT_LON;
@@ -16,23 +17,13 @@ darksky(location, function(msg){
 })
 
 
+
 function timestamp2date(timestamp) {
   var date = new Date(timestamp * 1000);
   return date;
 }
 
-function s_date(date, ret_hours) {
-  var s = "";
-  var weekday = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-  s += weekday[date.getDay()];
-  
-  if (ret_hours == true) {
-    var hours = date.getHours();
-    s += " " + hours;
-  }
-  
-  return s;
-}
+
 
 function s_temperature(low, high) {
   low = Math.round(low);
@@ -49,36 +40,24 @@ function s_temperature(low, high) {
   return ret + "C";
 }
 
-function degToCompass(num) {
-    var val = Math.floor((num / 22.5) + 0.5);
-    var arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-    return arr[(val % 16)];
-}
 
-function windMs2Bft(v) {
-  var knot = v/(0.51+4/900);
-  
-  if(knot==0) return 0;
-  if(knot>1 && knot<3.5) return 1;
-  if(knot>=3.5 && knot<6.5) return 2;
-  if(knot>=6.5 && knot<10.5) return 3;
-  if(knot>=10.5 && knot<16.5) return 4;
-  if(knot>=16.5 && knot<21.5) return 5;
-  if(knot>=21.5 && knot<27.5) return 6;
-  if(knot>=27.5 && knot<33.5) return 7;
-  if(knot>=33.5 && knot<40.5) return 8;
-  if(knot>=40.5 && knot<47.5) return 9;
-  if(knot>=47.5 && knot<55.5) return 10;
-  if(knot>=55.5 && knot<63.5) return 11;
-  if(knot>=63.5 && knot<74.5) return 12;
-  if(knot>=74.5 && knot<80.5) return 13;
-  if(knot>=80.5 && knot<89.5) return 14;
-  if(knot>=89.5) return 15;
-  
-  return "?";
-}
 
 function s_wind(speed, gust, bearing) {
+  speed = Math.round(windMs2Kn(speed));
+  gust = Math.round(windMs2Kn(gust));
+  
+  var ret = ""
+  if (speed > 0) {
+    ret += degToCompass(bearing) + "" + speed;
+    if (speed != gust) {
+      ret += "G"+gust;
+    }
+  }
+  
+  return ret;
+}
+
+function s_windBft(speed, gust, bearing) {
   speed = windMs2Bft(speed);
   gust = windMs2Bft(gust);
   
@@ -102,6 +81,23 @@ function s_precipitation(intensity, probability) {
   return ret;
 }
 
+
+function j_DataPoint(dp) {
+
+  var date = timestamp2date(dp.time) 
+  
+  return {
+    day: date.getDay(),
+    hours: date.getHours(),
+    temperature: s_temperature(dp.temperatureLow || dp.temperature, dp.temperatureHigh || null),
+    wind: s_wind(dp.windSpeed, dp.windGust, dp.windBearing),
+    precipitation: s_precipitation(dp.precipIntensity, dp.precipProbability),
+    pressure: Math.round(dp.pressure),
+    summary: dp.summary
+  };
+
+}
+
 function s_DataPoint(dp, hourly) {
   var s = "";
   var date = timestamp2date(dp.time) 
@@ -113,21 +109,53 @@ function s_DataPoint(dp, hourly) {
   return s;
 }
 
-function parseDsData(data, hourly) {
+function parseDsData(data) {
+  var points = [];
   for (var i = 0; i < data.length; i++) {
-    var s = s_DataPoint(data[i], hourly);
-    console.log(s);
+    points.push(j_DataPoint(data[i]));
   }
+  var s = "";
+  var day = -1;
+  var pressureDelta = 2;
+  var pressureUp = 0;
+  var pressureDown = 0;
+  for (var i = 0; i < points.length; i++) {
+    var point = points[i];
+    if (day != point.day) {
+      day = point.day;
+      s += dayName(point.day) + " ";
+    }
+    s += point.hours + " " + point.temperature;
+    if (point.wind) s += " " + point.wind
+    if (point.precipitation) s += " " + point.precipitation
+    if (point.pressure) {
+      if (point.pressure > pressureUp || point.pressure < pressureDown) {
+        pressureUp = point.pressure + pressureDelta;
+        pressureDown = point.pressure - pressureDelta;
+        s += " " + point.pressure
+      }
+    }
+    //s += ", " + point.summary
+    
+    s += "\n"
+  }
+  console.log(s);
+  // console.log("length: %i", s.length);
+  //prettyJSON(points);
+}
+
+function prettyJSON(obj) {
+    console.log(JSON.stringify(obj, null, 2));
 }
 
 function darksky(lat_lon, cb) {
-  //var url = "https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat_lon + "/?units=si";
+  // var url = "https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat_lon + "/?units=si";
   var url = "https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat_lon + "/";
   var options = {
     url: url,
     qs: {
       units: 'si',
-      exclude: 'currently,minutely,flags'
+      exclude: 'currently,minutely,flags,daily'
     },
     json: true,
     gzip: true
@@ -141,23 +169,25 @@ function darksky(lat_lon, cb) {
     // }
     
     console.log(err);
+    prettyJSON(result);
     // console.log(result.hourly.data);
-    //console.log(result.daily.data);
-    //console.log(result.daily.summary);
+    // console.log(result.daily.data);
+    // console.log(result.daily.summary);
     
     if (result.alerts) {
       console.log(result.alerts);
     }
     
-    console.log("Hourly:");
-    if (result.hourly.data) {
-      parseDsData(result.hourly.data, true);
-    }
-    
-    console.log("Daily:");
-    if (result.daily.data) {
-      parseDsData(result.daily.data);
-    }
+    // if (result.hourly && result.hourly.data) {
+    //   console.log("Hourly:");
+    //   parseDsData(result.hourly.data, true);
+    // }
+    // 
+    // 
+    // if (result.daily && result.daily.data) {
+    //   console.log("Daily:");
+    //   parseDsData(result.daily.data);
+    // }
     
     
     
